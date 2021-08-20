@@ -1,0 +1,343 @@
+// Created by Ahmed Ibreljic on 10/22/19. 
+// Copyright © 2019 Ahmed Ibreljic. All rights reserved.
+import java.util.Scanner;
+
+class Main {
+static Scanner input = new Scanner(System.in);
+
+	public static void main(String[] args) {
+    System.out.println ("\n\n---TESTS---\n\n");
+		Tests.run();
+
+    System.out.println ("\n\n---GAME STARTS ---\n\n");
+		FirstLevel game = new FirstLevel(1, 3, 2);
+
+		while (!game.isComplete()) {
+      String surroundings = game.lookAround();
+      System.out.println("~~ " + surroundings + " ~~");
+			String action = prompt("What do you want to do? You can 'go', 'pick up', 'drop', 'inventory'");
+      if (action.equals("go"))
+      {
+        String direction = prompt ("Which direction? (north, south, east or west)");
+        game.go(direction);
+      }
+      else if (action.equals("inventory"))
+      {
+        System.out.println ("You have:\n" + game.inventory());
+      }
+      else if (action.equals("pick up"))
+      {
+        String pickItem = prompt ("pick up");
+        game.pickUp("");  
+      }
+      else if (action.equals("drop"))
+      {
+        game.drop("");
+      }
+		}
+    System.out.println ("\n\n---GAME OVER ---\n\n");
+	}
+	// Just a "helper" method
+	public static String prompt(String msg) {
+		System.out.println(msg);
+    System.out.print(">");
+		return input.nextLine();
+	}
+}
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+FirstLevel
+
+/* Had to be copied and pastied into IntelliJ because 
+a) Issues with identifiying identifiers
+b) Declaring "illegal" start types */
+
+class FirstLevel {
+ int playerLoc; // Which room our player is on
+ int keyLoc; // Which room the key is in, etc...
+ int bookLoc; // 0 means that we are holding one of the items
+ int inventorySpace = 7; // A number representing how much we can hold
+ boolean doorUnlocked = false;
+ 
+ public FirstLevel(int playerStart, int keyStart, int bookStart) {
+  playerLoc = playerStart;
+  keyLoc = keyStart;
+  bookLoc = bookStart;
+  }
+private void debug (String msg)
+{
+// Primary dialogue for each of the following rooms
+  System.out.println("\t*** " + msg + " ***");
+}
+ public String lookAround() {
+  debug("Looking around in room " + playerLoc);
+   String message = "";
+   if (playerLoc == 1) {
+     message += "You are in your prisoner cell in a dungeon. It is dark and musky, the only light is coming from an archway to the north\n";
+     message += "You see the exit of this dungeon, a sturdy door to the south.\n";
+   }
+   if (playerLoc == 2) {
+     message += "You are in your prisoner media room in a dungeon. It is a dungeon media room so it is not fancy. The couch is awful.\n";
+     message += "Your cell is to the south. The heavy stone wall has crumbled in places, and the east wall has a gap wide enough gap to squeeze through. There is a magical book within this room!\n";
+   }
+  if (playerLoc == 3) {
+    message += "You are in your prisoner library room in a dungeon. It is a dungeon library room so it is too cold to read in. The books are absolutely awful and ripped up.\n";
+    message += "The dungeon media room is to your south. You can see the magical book through the gap between this room and the dungeon media room. There is a shining little key in this room!";
+  }
+  if (playerLoc == 4) {
+    message += "You have completed the full dungeon course. You are free to leave O King of Java. There are no objects within this room. Your dungeon life is over as the game is over.";
+  // These playerLocs mention the messages that are affiliated with each of the rooms. 
+  }
+   return message;
+ }
+//  In the case of room 4, the message dictates the completion. 
+ 
+ public boolean isComplete() {
+   return (playerLoc == 4);
+ }
+ public boolean go(String direction)
+{
+  debug("Attempting to move, direction:" + direction);
+  //The user from room 1 → room 2
+   if (playerLoc == 1 && direction.equals("north"))
+  {
+     playerLoc = 2;
+     return true;
+  //The user from room 2 → room 3
+   }
+  else if (playerLoc == 2 && direction.equals("east"))
+  {
+    playerLoc = 3;
+    return true;
+  }
+  //The user from room 3 → room 2
+  else if (playerLoc == 3 && direction.equals("west"))
+  {
+    playerLoc = 2;
+    return true;
+  }
+  //The user from room 2 → room 1
+  else if (playerLoc == 2 && direction.equals("south"))
+  {
+    playerLoc = 1;
+    return true;
+  }
+  //The user from room to room until the character completes the entire game
+  else if (playerLoc == 1 && keyLoc == 0 && direction.equals("south"))
+  {
+    playerLoc = 4;
+    doorUnlocked = true;
+    return true;
+  }
+  //Key is necessitated for room 4 to be accessed 
+  else if (playerLoc == 1 && keyLoc != 0 && direction.equals("south"))
+  {
+  System.out.println("This dungeon door is locked. Find a way to unlock it.");
+  }
+  //Needs a more appropriate method to enter room
+  else{
+    System.out.println("You ran into a wall. Go a different direction you Goblin!");
+  }
+  return false;
+ }
+ public boolean pickUp(String item) {
+  debug("Attempting to pick up, item: " + item);
+  //If space < 2, then picks up book
+  //Conditional that book can be taken from room 2
+  if (playerLoc == 2 && inventorySpace >=6 && bookLoc == 2)
+  {
+  
+    System.out.println(" *** You have picked up a book in Room 2! ***");
+     bookLoc = 0;
+    inventorySpace -= 6;
+     return true;
+  }
+  //Book is taken from room 3
+  else if (playerLoc == 3 && inventorySpace >=6 && bookLoc == 3)
+  {
+  
+    System.out.println(" *** You have picked up a book in Room 3! ***");
+     bookLoc = 0;
+    inventorySpace -= 6;
+     return true;
+  }
+  //Book within room 1 is received 
+  else if (playerLoc == 1 && inventorySpace >=6 && bookLoc == 1)
+  {
+  
+    System.out.println(" *** You have picked up a book in Room 1! ***");
+     bookLoc = 0;
+    inventorySpace -= 6;
+     return true;
+  }
+  //Key within room 3 is taken from the pivotal
+  else if (playerLoc == 3 && inventorySpace >= 2 && keyLoc == 3)
+  {
+      
+    System.out.println(" *** You have picked up a key in Room 3! ***");
+     keyLoc = 0;
+    inventorySpace -= 2;
+     return true;
+   //Key within room 2 is also taken 
+  }
+  else if (playerLoc == 2 && inventorySpace >= 2 && keyLoc == 2)
+  {
+      
+    System.out.println(" *** You have picked up a key in Room 2! ***");
+     keyLoc = 0;
+    inventorySpace -= 2;
+     return true;
+  //Key vectored in room 1 is taken into inventory
+  }
+  else if (playerLoc == 1 && inventorySpace >= 2 && keyLoc == 1)
+  {
+      
+    System.out.println(" *** You have picked up a key in Room 1! ***");
+     keyLoc = 0;
+    inventorySpace -= 2;
+     return true;
+  }
+  //No more items is mentioned to the character 
+  else if (playerLoc == 1)
+  {
+      
+    System.out.println(" *** There is nothing in this room! ***");
+     keyLoc = 0;
+    inventorySpace -= 2;
+     return true;
+  }
+  //Item is unavailable for inventory because of lack of storage
+  else{
+    System.out.println(" *** You can't pick up an item! Check your inventory, you can only hold one item at a time. ***");
+  }
+   return false;
+ }
+ public boolean drop(String item) {
+  debug("Attempting to drop, item:" + item);
+  //Room 1, book is dropped
+  if (playerLoc == 1 && bookLoc == 0)
+  {
+      
+    System.out.println(" *** You have dropped a book in Room 1! ***");
+     bookLoc = 1;
+    inventorySpace += 6;
+     return true;
+  }
+  //Room 2, book is dropped
+  if (playerLoc == 2 && bookLoc == 0)
+  {
+      
+    System.out.println(" *** You have dropped a book in Room 2! ***");
+     bookLoc = 2;
+    inventorySpace += 6;
+     return true;
+  }
+  //Room 3, book is dropped
+  if (playerLoc == 3 && bookLoc == 0)
+  {
+      
+    System.out.println(" *** You have dropped a book in Room 3! ***");
+     bookLoc = 3;
+    inventorySpace += 6;
+     return true;
+  }
+  //Room 1, key is dropped
+  if (playerLoc == 1 && keyLoc == 0)
+  {
+      
+    System.out.println(" *** You have dropped a key in Room 1! ***");
+     keyLoc = 1;
+    inventorySpace += 2;
+     return true;
+  }
+  //Room 2, key is dropped
+  else if (playerLoc == 2 && keyLoc == 0)
+  {
+      
+    System.out.println(" *** You have dropped a key in Room 2! ***");
+     keyLoc = 2;
+    inventorySpace += 2;
+     return true;
+  }
+  //Room 3, key is dropped
+  else if (playerLoc == 3 && keyLoc == 0)
+  {
+      
+    System.out.println("  *** You have dropped a key! in Room 3! ***");
+     keyLoc = 3;
+    inventorySpace += 2;
+     return true;
+  }
+  //No item within inventory therefore no items condition causes no items to be dropped
+  else
+  {
+  System.out.println(" *** There is nothing to drop! ***");
+  }
+ 
+    return false;
+ }
+public String inventory()
+{
+  String message = "";
+  //If no key, then room 4 cannot be accessed
+  if (keyLoc == 0)
+  {
+    message += "A large brass key which can be utilized to open the dungeon room within room 1!\n";
+  }
+  //Book unlocks the hints of accessing and finding the key to open room 4 and exit the dungeon. 
+  if (bookLoc == 0)
+  {
+    message += "A magical book that withholds all of the secrets of this dungeon. It told me that the key for the dungeon room is within the room close by.";
+  }
+  if (message.equals(""));
+  {
+    message = "Nothing";
+  }
+  return message;
+}
+}
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Tests
+
+class Tests
+{
+  public static void check(boolean expression, boolean expected_value, String msg, String error) {
+		System.out.print(msg + ": ");
+		if (expression == expected_value)
+			System.out.println("👍 👍");
+		else
+			System.out.println("😵\n\tProblem: " + error);
+	}
+
+	public static void run()
+  {
+		FirstLevel game = new FirstLevel(1, 3, 2);
+		check(!game.lookAround().equals(""), true, "Get a description when you look around", "It looks like lookAround() is returning an empty string");
+    String firstRoomDesc = game.lookAround();
+    check (game.go("east"), false, "Go east from room 1 (shouldn't work)", "go(\"east\") should not work from room 1 (go()a should return false)");
+    check (game.go("south"), false, "Go south from room 1 (shouldn't work without the key)", "go(\"south\") should not work from room 1 without picking up the key");
+    check (game.go("north"), true, "Go north from room 1 (should be fine)", "go(\"north\") should take us to room 2 from room 1");
+    
+    check (game.go("north"), false, "Go north from room 2 (shouldn't work)", "go(\"north\") should not work from room 2");
+
+    check (game.pickUp("book"), true, "Pick up book from room 2", "Book should be in room 2!");
+
+    check (game.go("east"), true, "Go east from room 2 (should be fine)", "go(\"east\") should  takes us to room 3 from room 2");
+
+    check (game.pickUp("key"), false, "Pick up key from room 3 (should not work because of inventory space)", "We should not have space for the key!");
+
+    check (game.drop("book"), true , "Drop the book", "We should be able to drop the book we picked up");
+
+    check (game.pickUp("key"), true, "Pick up key from room 3 (should work now because we have the space)", "We should be able to pick up the key in room 3");
+
+    check (game.go("west"), true, "Go west from room 3 (should be fine)", "go(\"west\") should take us from room 3 to room 2");
+
+    check (game.go("south"), true, "Go south from room 2 (should be fine)", "go(\"south\") should take us from room 2 to room 1");
+
+    check (game.go("south"), true, "Go south from room 1 (should be fine with the key)", "go(\"south\") should take us from room 1 to room 4");
+
+    check (game.isComplete(), true, "Game is over", "Game should be over!");
+	}
+
+}
